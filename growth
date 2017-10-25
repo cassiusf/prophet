@@ -1,0 +1,41 @@
+#Extract predictors 
+
+library("googleAnalyticsR")
+library("devtools")
+library("RGA")
+
+ga_auth()
+
+ga_data <- get_mcf('xxx', start.date = "2016-01-01", 
+                   end.date = "2016-12-30" , metrics = "mcf:totalConversions", 
+                   dimensions = "mcf:conversionDate",
+                   filters="mcf:conversionType==Transaction")
+
+
+ga_data$conversionDate <- seq.Date(as.Date("2016-01-01"), by = 1, length.out = 365)
+colnames(ga_data) <- c("ds", "y")
+
+#Facebook prophet
+
+library(prophet)
+library(dplyr)
+
+df <- ga_data %>%
+mutate(y = log(y))
+
+m <- prophet(df)
+future <- make_future_dataframe(m, periods = 365)
+tail(future)
+
+forecast <- predict(m, future)
+tail(forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
+plot(m, forecast)       
+
+prophet_plot_components(m, forecast)
+
+#Retrive natural logarithm
+#Inverse exponential e=2.178 or natural log
+exp(6.810800)
+
+
+
