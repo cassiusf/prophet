@@ -38,4 +38,28 @@ prophet_plot_components(m, forecast)
 exp(6.810800)
 
 
+##Control efficiency model
+
+ga_data_17 <- get_mcf('108643487', start.date = "2017-01-01", 
+                   end.date = "2017-09-30" , metrics = "mcf:totalConversions", 
+                   dimensions = "mcf:conversionDate",
+                   filters="mcf:conversionType==Transaction")
+
+ga_data_17$conversionDate <- seq.Date(as.Date("2017-01-01"), by = 1, length.out = 273)
+control=merge(ga_data_17, forecast, by.x = "conversionDate" , by.y = "ds", all.x = TRUE)
+
+
+
+forecast17 <- subset(forecast, ds >= '2017-01-01' & ds < '2017-10-01')
+
+# Add columns in DF
+cvr_17 <- ga_data_17$totalConversions
+forecast17$cvr_17 <- cvr_17
+e <- forecast17$yhat
+forecast17$e <- exp(e)
+diff <- (cvr_17/e)
+
+forecast17$diff <- diff
+mean(diff)
+median(diff)
 
